@@ -1,2 +1,29 @@
-# Wsendy-game-
-Wsendy game inakupa uwezo wa kucheza game free kabisa
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wsendy Game</title>
+    <style>
+        body { text-align: center; font-family: Arial; background-color: #1a1a1a; color: white; padding-top: 50px; }
+        #game-btn { padding: 25px 50px; font-size: 24px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 15px; box-shadow: 0 5px #155d27; }
+        #game-btn:active { box-shadow: 0 2px #155d27; transform: translateY(4px); }
+        #score { font-size: 40px; margin-top: 20px; color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>Mchezo wa Wsendy</h1>
+    <p>Gusa kitufe upate alama!</p>
+    
+    <div id="score">Alama: 0</div>
+    <br>
+    <button id="game-btn" onclick="ongezaAlama()">GUSA HAPA!</button>
+
+    <script>
+        let alama = 0;
+        function ongezaAlama() {
+            alama++;
+            document.getElementById("score").innerHTML = "Alama: " + alama;
+        }
+    </script>
+</body>
+</html>
+
