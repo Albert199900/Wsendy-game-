@@ -1,26 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="sw">
 <head>
-    <title>Wsendy Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wsendy Racing Pro</title>
     <style>
-        body { text-align: center; font-family: Arial; background-color: #1a1a1a; color: white; }
-        #game-btn { padding: 20px 40px; font-size: 20px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 10px; margin-top: 50px; }
-        #score { font-size: 30px; margin-top: 20px; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #333; font-family: 'Arial', sans-serif; }
+        #gameGui { position: absolute; top: 10px; width: 100%; text-align: center; color: white; z-index: 10; pointer-events: none; }
+        #scoreBoard { font-size: 24px; font-weight: bold; background: rgba(0,0,0,0.5); display: inline-block; padding: 5px 20px; border-radius: 20px; }
+        
+        canvas { display: block; background: #555; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 20; }
+        .btn { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border: 2px solid white; border-radius: 50%; color: white; font-size: 30px; display: flex; align-items: center; justify-content: center; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .btn:active { background: rgba(255,255,255,0.5); }
     </style>
 </head>
 <body>
-    <h1>Mchezo wa Wsendy</h1>
-    <p>Gusa kitufe upate alama!</p>
-    
-    <div id="score">Alama: 0</div>
-    <button id="game-btn" onclick="ongezaAlama()">GUSA HAPA!</button>
+
+    <div id="gameGui">
+        <div id="scoreBoard">Score: 0</div>
+        <p style="margin: 5px 0;">Kwakua Magari Mekundu!</p>
+    </div>
+
+    <canvas id="raceCanvas"></canvas>
+
+    <div class="controls">
+        <div class="btn" id="leftBtn">◀</div>
+        <div class="btn" id="rightBtn">▶</div>
+    </div>
 
     <script>
-        let alama = 0;
-        function ongezaAlama() {
-            alama++;
-            document.getElementById("score").innerHTML = "Alama: " + alama;
+        const canvas = document.getElementById("raceCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Rekebisha ukubwa wa screen
+        canvas.width = Math.min(window.innerWidth, 400);
+        canvas.height = window.innerHeight;
+
+        let score = 0;
+        let gameSpeed = 5;
+        let gameActive = true;
+
+        // Player Car
+        const player = {
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 120,
+            w: 50,
+            h: 90,
+            color: "#00FF00",
+            speed: 7
+        };
+
+        let enemies = [];
+        let lineY = 0;
+
+        // Controls
+        let moveLeft = false;
+        let moveRight = false;
+
+        document.getElementById("leftBtn").ontouchstart = () => moveLeft = true;
+        document.getElementById("leftBtn").ontouchend = () => moveLeft = false;
+        document.getElementById("rightBtn").ontouchstart = () => moveRight = true;
+        document.getElementById("rightBtn").ontouchend = () => moveRight = false;
+
+        // Kwa Kompyuta
+        window.onkeydown = (e) => {
+            if(e.key === "ArrowLeft") moveLeft = true;
+            if(e.key === "ArrowRight") moveRight = true;
+        };
+        window.onkeyup = (e) => {
+            if(e.key === "ArrowLeft") moveLeft = false;
+            if(e.key === "ArrowRight") moveRight = false;
+        };
+
+        function drawRoad() {
+            ctx.fillStyle = "#444";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Mistari ya barabarani
+            ctx.strokeStyle = "white";
+            ctx.setLineDash([30, 30]);
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, -60 + lineY);
+            ctx.lineTo(canvas.width / 2, canvas.height + lineY);
+            ctx.stroke();
+            
+            lineY += gameSpeed;
+            if (lineY > 60) lineY = 0;
         }
+
+        function drawCar(x, y, w, h, color, isPlayer) {
+            // Body
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, w, h);
+            // Roof
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.fillRect(x + 10, y + 20, w - 20, h - 40);
+            // Tires
+            ctx.fillStyle = "black";
+            ctx.fillRect(x - 5, y + 10, 5, 20); // FL
+            ctx.fillRect(x + w, y + 10, 5, 20); // FR
+            ctx.fillRect(x - 5, y + h - 30, 5, 20); // RL
+            ctx.fillRect(x + w, y + h - 30, 5, 20); // RR
+        }
+
+        function spawnEnemy() {
+            if (Math.random() < 0.02) {
+                let lane = Math.random() < 0.5 ? canvas.width/4 - 25 : (3*canvas.width/4) - 25;
+                enemies.push({ x: lane, y: -100, w: 50, h: 90, color: "red" });
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRoad();
+
+            // Move Player
+            if (moveLeft && player.x > 10) player.x -= player.speed;
+            if (moveRight && player.x < canvas.width - player.w - 10) player.x += player.speed;
+
+            drawCar(player.x, player.y, player.w, player.h, player.color, true);
+
+            // Update Enemies
+            spawnEnemy();
+            enemies.forEach((enemy, index) => {
+                enemy.y += gameSpeed;
+                drawCar(enemy.x, enemy.y, enemy.w, enemy.h, enemy.color, false);
+
+                // Collision Detection
+                if (player.x < enemy.x + enemy.w &&
+                    player.x + player.w > enemy.x &&
+                    player.y < enemy.y + enemy.h &&
+                    player.y + player.h > enemy.y) {
+                    gameActive = false;
+                    alert("GAME OVER!\nAlama zako: " + score);
+                    location.reload();
+                }
+
+                // Score
+                if (enemy.y > canvas.height) {
+                    enemies.splice(index, 1);
+                    score++;
+                    document.getElementById("scoreBoard").innerHTML = "Score: " + score;
+                    if(score % 10 === 0) gameSpeed += 0.5; // Ongeza kasi
+                }
+            });
+
+            requestAnimationFrame(update);
+        }
+
+        update();
     </script>
 </body>
 </html>
