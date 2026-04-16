@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wsendy Game</title>
+    <style>
+        body { text-align: center; font-family: Arial; background-color: #1a1a1a; color: white; }
+        #game-btn { padding: 20px 40px; font-size: 20px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 10px; margin-top: 50px; }
+        #score { font-size: 30px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Mchezo wa Wsendy</h1>
+    <p>Gusa kitufe upate alama!</p>
+    
+    <div id="score">Alama: 0</div>
+    <button id="game-btn" onclick="ongezaAlama()">GUSA HAPA!</button>
+
+    <script>
+        let alama = 0;
+        function ongezaAlama() {
+            alama++;
+            document.getElementById("score").innerHTML = "Alama: " + alama;
+        }
+    </script>
+</body>
+</html>
+
